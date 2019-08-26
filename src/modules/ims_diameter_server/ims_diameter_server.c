@@ -266,6 +266,16 @@ int diameter_request(struct sip_msg * msg, char* peer, char* appid, char* comman
 		return -1;
 	}
 
+       // convert message char* to str added by M.Baghdadi 
+        if (message) {
+                if (get_str_fparam(&s_message, msg, (fparam_t*)message) < 0) {
+                    LM_ERR("failed to get json string\n");
+                    return -1;
+                }
+                LM_DBG("json %.*s\n", s_message.len, s_message.s);
+        }
+	//---------------
+	
 	if (peer) {
 		if (get_str_fparam(&s_peer, msg, (fparam_t*)peer) < 0) {
 		    LM_ERR("failed to get Peer\n");
@@ -301,7 +311,8 @@ int diameter_request(struct sip_msg * msg, char* peer, char* appid, char* comman
 	req = cdpb.AAACreateRequest(i_appid, i_commandcode, Flag_Proxyable, session);
 	if (!req) goto error1;
 
-	if (addAVPsfromJSON(req, &s_message)) {
+	// ------ return 1 value is for true state , Modified by M.baghdadi -----//
+	if (!addAVPsfromJSON(req, &s_message)) {
 		LM_ERR("Failed to parse JSON Request\n");
 		return -1;
 	}
